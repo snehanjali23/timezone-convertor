@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🕒 Time Zone Converter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #89f7fe, #66a6ff);
+      padding: 40px;
+      text-align: center;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      display: inline-block;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+    input, select, button {
+      padding: 10px;
+      margin: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>🕒 Time Zone Converter</h2>
+
+    <input type="time" id="timeInput" required>
+    
+    <select id="sourceZone">
+      <option value="UTC">UTC</option>
+      <option value="America/New_York">New York (EST)</option>
+      <option value="America/Los_Angeles">Los Angeles (PST)</option>
+      <option value="Europe/London">London (GMT)</option>
+      <option value="Asia/Kolkata">India (IST)</option>
+      <option value="Asia/Tokyo">Japan (JST)</option>
+      <option value="Australia/Sydney">Australia (AEST)</option>
+    </select>
+
+    <button onclick="convertTime()">Convert</button>
+
+    <div class="result" id="resultArea"></div>
+  </div>
+
+  <script>
+    function convertTime() {
+      const timeInput = document.getElementById("timeInput").value;
+      const sourceZone = document.getElementById("sourceZone").value;
+      const resultArea = document.getElementById("resultArea");
+
+      if (!timeInput) {
+        resultArea.innerHTML = "❌ Please enter a valid time.";
+        return;
+      }
+
+      // Combine today's date with the entered time
+      const today = new Date().toISOString().split("T")[0];
+      const dateTimeString = `${today}T${timeInput}:00`;
+      const sourceTime = new Date(dateTimeString);
+
+      // Convert from source timezone to UTC
+      const utcTime = new Date(
+        new Intl.DateTimeFormat("en-US", {
+          timeZone: sourceZone,
+          hour12: false,
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        }).formatToParts(sourceTime).reduce((acc, part) => {
+          if (part.type === 'hour') acc.hour = part.value;
+          if (part.type === 'minute') acc.minute = part.value;
+          if (part.type === 'second') acc.second = part.value;
+          return acc;
+        }, { hour: 0, minute: 0, second: 0 })
+      );
+
+      // List of time zones to display
+      const zones = [
+        { label: "UTC", zone: "UTC" },
+        { label: "New York (EST)", zone: "America/New_York" },
+        { label: "Los Angeles (PST)", zone: "America/Los_Angeles" },
+        { label: "London (GMT)", zone: "Europe/London" },
+        { label: "India (IST)", zone: "Asia/Kolkata" },
+        { label: "Japan (JST)", zone: "Asia/Tokyo" },
+        { label: "Australia (AEST)", zone: "Australia/Sydney" }
+      ];
+
+      let output = "<h3>🕓 Converted Times</h3>";
+      zones.forEach(({ label, zone }) => {
+        const converted = new Intl.DateTimeFormat("en-US", {
+          timeZone: zone,
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true
+        }).format(new Date(dateTimeString));
+        output += `${label}: ${converted}<br>`;
+      });
+
+      resultArea.innerHTML = output;
+    }
+  </script>
+
+</body>
+</html>
